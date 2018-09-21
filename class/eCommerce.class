@@ -1,11 +1,238 @@
 <?php
 /**
  * Created by Vasiliy Ivanov
+ * client: Bank SIAB
  * Version: 0.0.1
- * Date: 08.09.2018
+ * Date: 21.09.2018
  * email: vasilisko@gmail.com
  */
 
 class eCommerce {
+  var $result = array();
+  var $config;
+  var $log = array();
+  var $curlData;
 
+  function __construct($configNew = array()) {
+    $this->result['status'] = 'error';
+    $this->config = array(
+      'url'                => '',
+      'merchantid'         => '',
+      'area'               => 'development', // development / production
+      'logShow'            => FALSE,         // FALSE / write / print
+      'logCurl'            => 'standart',    // standart / full
+      'dirLog'             => 'log',
+      'curl_sslVerifypeer' => FALSE,
+      'data' => 'json'
+    );
+
+    if (is_array($configNew) && count($configNew)) {
+      foreach ($configNew as $key => $value) {
+        $this->config[$key] = $value;
+      }
+    }
+
+    if (!$this->config['url'] || !$this->config['merchantid']) {
+      $this->log[] = '<b color="red">ERROR</b>: необходимо настроит config!';
+      if (!$this->config['url']) {
+        $this->log[] = 'Не указан <b>url</b>';
+      } else if (!$this->config['merchantid']) {
+        $this->log[] = 'Не указан <b>merchantid</b>';
+      }
+
+      echo $this->returnResult($status = 'error');
+      die();
+    }
+  }
+
+  function exec_CreateOrder() {
+    $this->log[] = 'Выполняется CreateOrder';
+    $xml = array();
+    $xml[] = '<TKKPG>';
+      $xml[] = '<Request>';
+        $xml[] = '<Operation>CreateOrder</Operation>';
+        $xml[] = '<Language>RU</Language>';
+        $xml[] = '<Order>';
+          $xml[] = '<Merchant>' . $this->config['merchantid'] . '</Merchant>';
+          $xml[] = '<OrderType>Purchase</OrderType>';
+          $xml[] = '<Amount>' . $_POST['amount'] . '</Amount>';
+          $xml[] = '<Currency>' . $_POST['currency'] . '</Currency>';
+          $xml[] = '<Description>' . $_POST['description'] . '</Description>';
+          $xml[] = '<ApproveURL>' . $_POST['approveurl'] . '</ApproveURL>';
+          $xml[] = '<CancelURL>' . $_POST['cancelurl'] . '</CancelURL>';
+          $xml[] = '<DeclineURL>' . $_POST['declineurl'] . '</DeclineURL>';
+          $xml[] = '<AddParams>';
+            $xml[] = '<OrigAmount/>';
+            $xml[] = '<OrigCurrency/>';
+          $xml[] = '</AddParams>';
+        $xml[] = '</Order>';
+      $xml[] = '</Request>';
+    $xml[] = '</TKKPG>';
+
+    $xmlSend = implode('', $xml);
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $this->config['url']);
+    curl_setopt($ch, CURLOPT_REFERER, $_POST['referer']);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+    curl_setopt($ch, CURLOPT_HEADER, 0);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2); // количество секунд ожидания при попытке подключения.
+    curl_setopt($ch, CURLOPT_TIMEOUT, 5); // максимальное количество секунд для выполнения функций cURL.
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $this->config['curl_sslVerifypeer']);
+    curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $xmlSend);
+
+    $this->curlExecute($ch);
+
+    if ($this->config['logCurl'] == 'full') {
+      $this->log[] = 'XML';
+      $this->log[] = '<textarea>' . $xmlSend . '</textarea>';
+    }
+
+    if ($this->curlData) {
+      if ($this->curlData['errno'] || !$this->curlData['main']) {
+        return $this->exec_Error();
+      }
+
+      $main = $this->convertXmlToArray($this->curlData['main']);
+
+      //echo '$main: ' . print_r($main, TRUE);
+      //echo '$result: ' . print_r($this->curlData['main'], TRUE);
+
+      $this->result['data'] = $main;
+      $this->result['status'] = 'accept';
+    }
+
+    /*
+
+
+
+    $result['main'] = curl_exec($ch);
+    $result['getinfo'] = curl_getinfo($ch);
+    $result['errno'] = curl_errno($ch);
+    $result['error'] = curl_error($ch);
+    $log[] = '';
+    $log[] = '';
+    if ($result['errno'] == 0) {
+      $log[] = 'Ответ: ';
+      $xml = simplexml_load_string($result['main']);
+      $json = json_encode($xml);
+      $xml = json_decode($json, TRUE);
+      $log[] = '<textarea class="curl">' . print_r($xml, TRUE) . '</textarea>';
+      $log[] = '';
+      $link = $xml->Response->Order->URL . '?OrderID=' . $xml->Response->Order->OrderID . '&SessionID=' . $xml->Response->Order->SessionID;
+      $log[] = 'Link: <a href="' . $link . '" target="_blank">' . $link . '</a>';
+    } else {
+      $log[] = '<b>Ошибка</b>: ';
+      $log[] = '<textarea class="curl">' . print_r($result, TRUE) . '</textarea>';
+    }
+     */
+
+    return $this->returnResult();
+  }
+
+  private function exec_Error() {
+    echo 'ОШИБКА exec_Error';
+    $this->showLog();
+    die();
+  }
+
+  private function curlExecute($ch) {
+    $logExecute = array();
+    $time['start'] = microtime(1);
+    $result = array(
+      'main'      => curl_exec($ch),
+      'getinfo'   => curl_getinfo($ch),
+      'errno'     => curl_errno($ch),
+      'error'     => curl_error($ch),
+      'status'    => 'access',
+      'time_work' => '0'
+    );
+    $time['end'] = microtime(1);
+
+    $result['time_work'] = round($time['end'] - $time['start'], 2);
+
+    if (($result['errno'] || $result['getinfo']['http_code'] > 200)) {
+      $result['status'] = 'error';
+      $result['err_status'] = 2;
+      if ($result['errno']) {
+        $result['err_text'] = ' Error #' . $result['errno'] . ': ' . $result['error'] . '. ';
+      }
+      if ($result['getinfo']['http_code'] > 200) {
+        $result['err_text'] = ' Http code: ' . $result['getinfo']['http_code'] . '. ';
+      }
+      $result['err_text'] .= ' Host: ' . $result['getinfo']['url'];
+    }
+
+    $logExecute[] = '- Status: <b>' . $result['status'] . '</b>. ';
+    if ($result['errno']) {
+      $logExecute[] = ' Error #' . $result['errno'] . ': ' . $result['error'] . '. ';
+    }
+    if ($result['getinfo']['http_code']) {
+      $logExecute[] = '- Http code: ' . $result['getinfo']['http_code'] . '. ';
+    }
+    if ($result['time_work']) {
+      $logExecute[] = '- Time script: ' . $result['time_work'] . ' sec. ';
+    }
+    if ($result['getinfo']['url']) {
+      $logExecute[] = '- Url: ' . $result['getinfo']['url'] . '. ';
+    }
+
+    $this->curlData = $result;
+
+    if ($this->config['logShow']) {
+      $this->log[] = 'curl Execute';
+      $this->log[] = '<br>' . implode('<br>', $logExecute);
+    }
+
+    if ($this->config['logCurl'] == 'full') {
+      if (is_array($this->curlData) && count($this->curlData)) {
+        $this->log[] =
+          'mainData:<br><textarea>' . print_r($this->curlData, TRUE) . '</textarea>';
+      }
+      if ($result['main']) {
+        $this->log[] = 'main:<br><textarea>' . $result['main'] . '</textarea>';
+
+      }
+      if ($result['getinfo']) {
+        $this->log[] =
+          'getinfo:<br><textarea>' . print_r($result['getinfo'], TRUE) . '</textarea>';
+      }
+      if ($this->curlData['error'] && $this->config['showError']) {
+        $this->log[] = $this->curlData['error']['message'] . '(' . $this->curlData['error']['code'] . ')';
+      }
+    }
+
+    if ($this->curlData['error']) {
+      return FALSE;
+    } else {
+      return $result;
+    }
+  }
+
+  private function convertXmlToArray($xml) {
+    $xml ? $result = json_decode(json_encode(simplexml_load_string($xml)), TRUE) : $result = FALSE;
+    return $result;
+  }
+
+  private function showLog() {
+    if ($this->config['logShow']) {
+      $this->result['log'] = implode('<br>', $this->log);
+    }
+  }
+
+  private function returnResult($status = 'error') {
+    $this->showLog();
+    if ($this->config['data'] == 'json') {
+      return $this->returnResultJson();
+    } else {
+      return $this->result;
+    }
+
+  }
+
+  private function returnResultJson() {
+    return json_encode($this->result,true);
+  }
 }

@@ -1,0 +1,125 @@
+<?php
+
+class testPage {
+  var $config;
+  var $menu;
+  var $form;
+
+  function __construct($configNew) {
+    $this->config = array(
+      'formMerchantid'  => '',
+      'formReferer'     => 'http://localhost',
+      'formApproveurl'  => 'http://localhost?status=Approve',
+      'formCancelurl'   => 'http://localhost?status=Cancel',
+      'formDeclineurl'  => 'http://localhost?status=Decline',
+      'formAmount'      => rand(10, 99) . '00',
+      'formCurrency'    => '840',
+      'formDescription' => 'product description - ' . date('ymd_His')
+    );
+
+    if (is_array($configNew) && count($configNew)) {
+      foreach ($configNew as $key => $value) {
+        if ($value) {
+          $this->config[$key] = $value;
+        }
+      }
+    }
+
+    $this->menu = array(
+      'form_001' => 'Form 1',
+      'form_002' => 'Создание заказа на покупку',
+      'form_003' => 'Создание заказа на покупку квази-наличных',
+      'form_004' => 'Получение статуса заказа',
+      'form_005' => 'Выполнение покупки',
+      'form_006' => 'точка доступа',
+      'form_007' => 'Проверка участия карты в 3-D Secure',
+      'form_008' => 'Подготовка данных для формы перехода на ACS',
+      'form_009' => 'Обработка сообщения PARes от ACS и выполнение финансовой транзакции',
+      'form_010' => 'Подготовка данных для формы перехода на ACS'
+    );
+    $this->form = array(
+      'form_001' => array(
+        'action' => 'createOrder',
+        'row'    => array(
+          'referer'     => $this->config['formReferer'],
+          'amount'      => $this->config['formAmount'],
+          'currency'    => $this->config['formCurrency'],
+          'description' => $this->config['formDescription'],
+          'approveurl'  => $this->config['formApproveurl'],
+          'cancelurl'   => $this->config['formCancelurl'],
+          'declineurl'  => $this->config['formDeclineurl']
+        )
+      )
+    );
+  }
+
+  function showPage() {
+    $contet = '<html>
+    <head>
+      <title>Test eCom</title>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      <meta http-equiv="Content-Language" content="ru">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link type="text/css" rel="stylesheet" href="css/styles.css?v=' . filemtime('css/styles.css') . '">
+      <script type="text/javascript" src="js/jquery.min.js"></script>
+      <script type="text/javascript" src="js/jquery-ui.js"></script>
+      <script type="text/javascript" src="js/script.js?v=' . filemtime('js/script.js') . '"></script>
+    </head>
+    <body>
+    ' . $this->menu() . '
+    <div class="form">' . $this->showContent() . '</div>
+    <div class="show_result"></div>
+    </body>
+    </html>';
+    return $contet;
+  }
+
+  private function showContent() {
+    if ($_GET['page']) {
+      $_GET['page'] = htmlentities($_GET['page']);
+    }
+    if (!$this->menu[$_GET['page']] || !$this->form[$_GET['page']]) {
+      return 'Выберите форму из меню';
+    } else {
+      return $this->createForm($_GET['page']);
+    }
+  }
+
+  private function createForm($formId) {
+    $form = $this->form[$formId];
+    $form['row']['action'] = $form['action'];
+    $html = array();
+
+    $html[] = '<form method="post" id="' . $form['action'] . '" class="form-ecom">';
+    $html[] = '<ul>';
+
+    if (count($form['row'])) {
+      foreach ($form['row'] as $key => $value) {
+        $status = NULL;
+        if (in_array($key, array('url', 'merchantid', 'action'))) {
+          $status = ' READONLY';
+        }
+        $html[] = '<li>
+          <div class="name">' . $key . '</div>
+          <div class="field"><input type="text" name="' . $key . '" value="' . $value . '"' . $status . '></div>
+        </li>';
+      }
+    }
+
+    $html[] = '<li>
+      <div class="name">&nbsp;</div>
+      <div class="field"><input type="submit" name="submit" value="submit"></div>
+    </li></ul></form>';
+    return implode('', $html);
+  }
+
+  private function menu() {
+    $menuStr = array();
+    foreach ($this->menu as $key => $value) {
+      $menuStr[] = '<li><a href="?page=' . $key . '">' . $value . '</a></li>' . "\n";
+    }
+    return '<ul class="menu">' . implode('', $menuStr) . '</ul>';
+  }
+}
+
+?>

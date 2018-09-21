@@ -1,0 +1,44 @@
+.form-ecom ul {
+  list-style: none;
+  margin: 0;
+  padding: 0; }
+  .form-ecom ul li + li {
+    margin: 5px 0 0 0; }
+  .form-ecom ul li div {
+    display: inline-block; }
+    .form-ecom ul li div.name {
+      margin: 0 5px 0 0;
+      text-align: right;
+      width: 160px; }
+    .form-ecom ul li div.field input {
+      padding: 5px 10px;
+      width: 400px; }
+      .form-ecom ul li div.field input[type="submit"] {
+        width: auto;
+        padding: 5px 40px; }
+
+.show_result .status {
+  font-weight: bold;
+  font-size: 12pt; }
+.show_result .log {
+  font-weight: normal;
+  font-size: 10pt;
+  border: 1px solid;
+  max-width: 90%;
+  padding: 10px;
+  background: #EEE;
+  margin: 5px 0; }
+  .show_result .log textarea {
+    width: 100%;
+    padding: 5px;
+    height: 150px;
+    max-width: 900px;
+    margin: 0 0 10px 0; }
+
+.curl {
+  width: 50%;
+  height: 200px;
+  padding: 10px;
+  background: #eee; }
+
+/*# sourceMappingURL=styles.css.map */
