@@ -10,20 +10,24 @@
 class eCommerce {
   var $result = array();
   var $config;
-  var $log = array();
+  var $log    = array();
   var $curlData;
 
   function __construct($configNew = array()) {
     $this->result['status'] = 'error';
     $this->config = array(
-      'url'                => '',
-      'merchantid'         => '',
-      'area'               => 'development', // development / production
-      'logShow'            => FALSE,         // FALSE / write / print
-      'logCurl'            => 'standart',    // standart / full
-      'dirLog'             => 'log',
-      'curl_sslVerifypeer' => FALSE,
-      'data' => 'json'
+      'url'                    => '',
+      'merchantid'             => '',
+      'area'                   => 'development',  // development / production
+      'logShow'                => FALSE,          // FALSE / write / print
+      'logCurl'                => 'standart',     // standart / full
+      'dirLog'                 => 'log',
+      'dirCert'                => '',
+      'data'                   => 'json',
+      'curl_Ssl'               => FALSE,          // отправка сертификата
+      'curl_sslVerifypeer'     => FALSE,
+      'curl_timeout'           => '5',            // максимальное количество секунд для выполнения функций cURL.
+      'curl_connectionTimeout' => '2'             // количество секунд ожидания при попытке подключения.
     );
 
     if (is_array($configNew) && count($configNew)) {
@@ -32,41 +36,33 @@ class eCommerce {
       }
     }
 
-    if (!$this->config['url'] || !$this->config['merchantid']) {
-      $this->log[] = '<b color="red">ERROR</b>: необходимо настроит config!';
-      if (!$this->config['url']) {
-        $this->log[] = 'Не указан <b>url</b>';
-      } else if (!$this->config['merchantid']) {
-        $this->log[] = 'Не указан <b>merchantid</b>';
-      }
-
-      echo $this->returnResult($status = 'error');
-      die();
-    }
+    $this->checkConfig();
   }
 
   function exec_CreateOrder() {
     $this->log[] = 'Выполняется CreateOrder';
+    $header = array('Content-Type' => 'text/xml');
+
     $xml = array();
     $xml[] = '<TKKPG>';
-      $xml[] = '<Request>';
-        $xml[] = '<Operation>CreateOrder</Operation>';
-        $xml[] = '<Language>RU</Language>';
-        $xml[] = '<Order>';
-          $xml[] = '<Merchant>' . $this->config['merchantid'] . '</Merchant>';
-          $xml[] = '<OrderType>Purchase</OrderType>';
-          $xml[] = '<Amount>' . $_POST['amount'] . '</Amount>';
-          $xml[] = '<Currency>' . $_POST['currency'] . '</Currency>';
-          $xml[] = '<Description>' . $_POST['description'] . '</Description>';
-          $xml[] = '<ApproveURL>' . $_POST['approveurl'] . '</ApproveURL>';
-          $xml[] = '<CancelURL>' . $_POST['cancelurl'] . '</CancelURL>';
-          $xml[] = '<DeclineURL>' . $_POST['declineurl'] . '</DeclineURL>';
-          $xml[] = '<AddParams>';
-            $xml[] = '<OrigAmount/>';
-            $xml[] = '<OrigCurrency/>';
-          $xml[] = '</AddParams>';
-        $xml[] = '</Order>';
-      $xml[] = '</Request>';
+    $xml[] = '<Request>';
+    $xml[] = '<Operation>CreateOrder</Operation>';
+    $xml[] = '<Language>EN</Language>';
+    $xml[] = '<Order>';
+    $xml[] = '<Merchant>' . $this->config['merchantid'] . '</Merchant>';
+    $xml[] = '<OrderType>Purchase</OrderType>';
+    $xml[] = '<Amount>' . $_POST['amount'] . '</Amount>';
+    $xml[] = '<Currency>' . $_POST['currency'] . '</Currency>';
+    $xml[] = '<Description>' . $_POST['description'] . '</Description>';
+    $xml[] = '<ApproveURL>' . $_POST['approveurl'] . '</ApproveURL>';
+    $xml[] = '<CancelURL>' . $_POST['cancelurl'] . '</CancelURL>';
+    $xml[] = '<DeclineURL>' . $_POST['declineurl'] . '</DeclineURL>';
+    $xml[] = '<AddParams>';
+    $xml[] = '<OrigAmount/>';
+    $xml[] = '<OrigCurrency/>';
+    $xml[] = '</AddParams>';
+    $xml[] = '</Order>';
+    $xml[] = '</Request>';
     $xml[] = '</TKKPG>';
 
     $xmlSend = implode('', $xml);
@@ -76,12 +72,30 @@ class eCommerce {
     curl_setopt($ch, CURLOPT_REFERER, $_POST['referer']);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
     curl_setopt($ch, CURLOPT_HEADER, 0);
-    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2); // количество секунд ожидания при попытке подключения.
-    curl_setopt($ch, CURLOPT_TIMEOUT, 5); // максимальное количество секунд для выполнения функций cURL.
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $this->returnHeader($header));
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->config['curl_connectionTimeout']);
+    curl_setopt($ch, CURLOPT_TIMEOUT, $this->config['curl_timeout']);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $this->config['curl_sslVerifypeer']);
     curl_setopt($ch, CURLOPT_POST, 1);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $xmlSend);
+
+    // TODO доделать работу с сертификатами
+    if ($this->config['curl_Ssl']) {
+
+      $certificateRequest = $this->config['dirCert'] . 'name.csr';  // CERTIFICATE REQUEST
+      $certificate = $this->config['dirCert'] . '9902200976.crt';   // CERTIFICATE
+      $privateKey = $this->config['dirCert'] . 'privatekey.key';    // PRIVATE KEY
+
+      curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE); //  запретит проверки сертификата удаленного сервера
+      curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2); //  1 означает проверку существования имени, значение 2 - кроме того, и проверку соответствия имени хоста.
+      curl_setopt($ch, CURLOPT_SSLKEY, $privateKey);
+      curl_setopt($ch, CURLOPT_SSLCERT, $certificate);
+      //curl_setopt($ch, CURLOPT_CAINFO, $certificateRequest);
+
+      $this->log[] = 'Подключение сертификатов:';
+      $this->log[] = 'CERTIFICATE: ' . $certificate;
+      $this->log[] = 'PRIVATE KEY: ' . $privateKey;
+    }
 
     $this->curlExecute($ch);
 
@@ -97,44 +111,17 @@ class eCommerce {
 
       $main = $this->convertXmlToArray($this->curlData['main']);
 
-      //echo '$main: ' . print_r($main, TRUE);
-      //echo '$result: ' . print_r($this->curlData['main'], TRUE);
-
       $this->result['data'] = $main;
       $this->result['status'] = 'accept';
     }
-
-    /*
-
-
-
-    $result['main'] = curl_exec($ch);
-    $result['getinfo'] = curl_getinfo($ch);
-    $result['errno'] = curl_errno($ch);
-    $result['error'] = curl_error($ch);
-    $log[] = '';
-    $log[] = '';
-    if ($result['errno'] == 0) {
-      $log[] = 'Ответ: ';
-      $xml = simplexml_load_string($result['main']);
-      $json = json_encode($xml);
-      $xml = json_decode($json, TRUE);
-      $log[] = '<textarea class="curl">' . print_r($xml, TRUE) . '</textarea>';
-      $log[] = '';
-      $link = $xml->Response->Order->URL . '?OrderID=' . $xml->Response->Order->OrderID . '&SessionID=' . $xml->Response->Order->SessionID;
-      $log[] = 'Link: <a href="' . $link . '" target="_blank">' . $link . '</a>';
-    } else {
-      $log[] = '<b>Ошибка</b>: ';
-      $log[] = '<textarea class="curl">' . print_r($result, TRUE) . '</textarea>';
-    }
-     */
 
     return $this->returnResult();
   }
 
   private function exec_Error() {
-    echo 'ОШИБКА exec_Error';
+    $this->log[] = 'ОШИБКА exec_Error';
     $this->showLog();
+    echo $this->returnResult($status = 'error');
     die();
   }
 
@@ -149,6 +136,7 @@ class eCommerce {
       'status'    => 'access',
       'time_work' => '0'
     );
+    curl_close($ch);
     $time['end'] = microtime(1);
 
     $result['time_work'] = round($time['end'] - $time['start'], 2);
@@ -167,7 +155,7 @@ class eCommerce {
 
     $logExecute[] = '- Status: <b>' . $result['status'] . '</b>. ';
     if ($result['errno']) {
-      $logExecute[] = ' Error #' . $result['errno'] . ': ' . $result['error'] . '. ';
+      $logExecute[] = '- Error #' . $result['errno'] . ': ' . $result['error'] . '. ';
     }
     if ($result['getinfo']['http_code']) {
       $logExecute[] = '- Http code: ' . $result['getinfo']['http_code'] . '. ';
@@ -188,16 +176,14 @@ class eCommerce {
 
     if ($this->config['logCurl'] == 'full') {
       if (is_array($this->curlData) && count($this->curlData)) {
-        $this->log[] =
-          'mainData:<br><textarea>' . print_r($this->curlData, TRUE) . '</textarea>';
+        $this->log[] = 'mainData:<br><textarea>' . print_r($this->curlData, TRUE) . '</textarea>';
       }
       if ($result['main']) {
         $this->log[] = 'main:<br><textarea>' . $result['main'] . '</textarea>';
 
       }
       if ($result['getinfo']) {
-        $this->log[] =
-          'getinfo:<br><textarea>' . print_r($result['getinfo'], TRUE) . '</textarea>';
+        $this->log[] = 'getinfo:<br><textarea>' . print_r($result['getinfo'], TRUE) . '</textarea>';
       }
       if ($this->curlData['error'] && $this->config['showError']) {
         $this->log[] = $this->curlData['error']['message'] . '(' . $this->curlData['error']['code'] . ')';
@@ -233,6 +219,41 @@ class eCommerce {
   }
 
   private function returnResultJson() {
-    return json_encode($this->result,true);
+    return json_encode($this->result, TRUE);
+  }
+
+  private function returnHeader($array) {
+    $headerArray = array();
+    if (is_array($array)) {
+      foreach ($array as $sParam => $sVal) {
+        $headerArray[] = $sParam . ': ' . $sVal;
+      }
+    }
+    return $headerArray;
+  }
+
+  private function checkConfig() {
+    $configCheck = TRUE;
+    $textError[] = '<b color="red">Config error</b>. ';
+    if (!$this->config['url']) {
+      $configCheck = FALSE;
+      $textError[] = 'Не указан <b>url</b>';
+    }
+    if (!$this->config['merchantid']) {
+      $configCheck = FALSE;
+      $textError[] = 'Не указан <b>merchantid</b>';
+    }
+    if ($this->config['curl_Ssl'] && (!$this->config['dirCert'] || !is_dir($this->config['dirCert']))) {
+      $configCheck = FALSE;
+      $textError[] = 'Не указан <b>dirCert</b> или путь не найден';
+      $textError[] = 'dir: ' . $this->config['dirCert'];
+    }
+
+    if (!$configCheck) {
+      foreach ($textError as $item) {
+        $this->log[] = $item;
+      }
+      $this->exec_Error();
+    }
   }
 }

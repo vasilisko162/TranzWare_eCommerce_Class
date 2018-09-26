@@ -13,7 +13,7 @@ class testPage {
       'formCancelurl'   => 'http://localhost?status=Cancel',
       'formDeclineurl'  => 'http://localhost?status=Decline',
       'formAmount'      => rand(10, 99) . '00',
-      'formCurrency'    => '840',
+      'formCurrency'    => '810',
       'formDescription' => 'product description - ' . date('ymd_His')
     );
 
