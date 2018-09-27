@@ -1,5 +1,4 @@
 $(document).ready(function() {
-
   $('.form-ecom').submit(function() {
     var form_id = '.form-ecom';
     $.ajax({
@@ -11,9 +10,12 @@ $(document).ready(function() {
         var status = '<div class="status">Status: ' + json.status + '</div>',
             log    = '',
             data   = '';
-
         if ('data' in json && json.data) {
-          data = '<div class="data">' + json.data + '</div>';
+          if (json.status === 'accept') {
+            data = '<div class="data">' + methods.returnInfo(json.data, json.operation) + '</div>';
+          } else {
+            data = '<div class="data">Error. Response code: ' + json.data.status + '. </div>';
+          }
         }
         if ('log' in json && json.log) {
           log = '<div class="log">' + json.log + '</div>';
@@ -32,4 +34,19 @@ $(document).ready(function() {
     });
     return false;
   });
+
+  var methods = {
+    returnInfo: function(data, operation) {
+      var str = '';
+      if (operation == 'CreateOrder') {
+        str = '<a href="' + data.urlFull + '" target="_blank">перейти на страницу оплаты</a>';
+      } else if (operation == 'GetOrderStatus') {
+        str = 'OrderId: ' + data.OrderID + '<br>OrderStatus: ' + data.OrderStatus;
+      } else {
+        str = data;
+      }
+
+      return str
+    }
+  }
 });

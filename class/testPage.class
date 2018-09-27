@@ -1,5 +1,9 @@
 <?php
 
+if ($_GET['page']) {
+  $_GET['page'] = htmlentities($_GET['page']);
+}
+
 class testPage {
   var $config;
   var $menu;
@@ -8,13 +12,14 @@ class testPage {
   function __construct($configNew) {
     $this->config = array(
       'formMerchantid'  => '',
-      'formReferer'     => 'http://localhost',
-      'formApproveurl'  => 'http://localhost?status=Approve',
-      'formCancelurl'   => 'http://localhost?status=Cancel',
-      'formDeclineurl'  => 'http://localhost?status=Decline',
+      'formReferer'     => 'http://siab-ecom',
+      'formApproveurl'  => 'http://siab-ecom?status=Approve',
+      'formCancelurl'   => 'http://siab-ecom?status=Cancel',
+      'formDeclineurl'  => 'http://siab-ecom?status=Decline',
       'formAmount'      => rand(10, 99) . '00',
       'formCurrency'    => '810',
-      'formDescription' => 'product description - ' . date('ymd_His')
+      'formDescription' => 'product description - ' . date('ymd_His'),
+      'formLanguage'    => 'EN'
     );
 
     if (is_array($configNew) && count($configNew)) {
@@ -26,20 +31,13 @@ class testPage {
     }
 
     $this->menu = array(
-      'form_001' => 'Form 1',
-      'form_002' => 'Создание заказа на покупку',
-      'form_003' => 'Создание заказа на покупку квази-наличных',
-      'form_004' => 'Получение статуса заказа',
-      'form_005' => 'Выполнение покупки',
-      'form_006' => 'точка доступа',
-      'form_007' => 'Проверка участия карты в 3-D Secure',
-      'form_008' => 'Подготовка данных для формы перехода на ACS',
-      'form_009' => 'Обработка сообщения PARes от ACS и выполнение финансовой транзакции',
-      'form_010' => 'Подготовка данных для формы перехода на ACS'
+      'form_001' => 'Создание заказа на покупку (Purchase)',
+      'form_002' => 'Создание заказа на покупку квази-наличных (QuasiCash)',
+      'form_003' => 'Получение статуса заказа (GetOrderStatus)'
     );
     $this->form = array(
       'form_001' => array(
-        'action' => 'createOrder',
+        'action' => 'Purchase',
         'row'    => array(
           'referer'     => $this->config['formReferer'],
           'amount'      => $this->config['formAmount'],
@@ -47,7 +45,31 @@ class testPage {
           'description' => $this->config['formDescription'],
           'approveurl'  => $this->config['formApproveurl'],
           'cancelurl'   => $this->config['formCancelurl'],
-          'declineurl'  => $this->config['formDeclineurl']
+          'declineurl'  => $this->config['formDeclineurl'],
+          'language'    => $this->config['formLanguage']
+        )
+      ),
+      'form_002' => array(
+        'action' => 'QuasiCash',
+        'row'    => array(
+          'referer'      => $this->config['formReferer'],
+          'amount'       => $this->config['formAmount'],
+          'currency'     => $this->config['formCurrency'],
+          'description'  => $this->config['formDescription'],
+          'approveurl'   => $this->config['formApproveurl'],
+          'cancelurl'    => $this->config['formCancelurl'],
+          'declineurl'   => $this->config['formDeclineurl'],
+          'language'     => $this->config['formLanguage'],
+          'OrigAmount'   => '',
+          'OrigCurrency' => ''
+        )
+      ),
+      'form_003' => array(
+        'action' => 'GetOrderStatus',
+        'row'    => array(
+          'OrderID'   => '@encrypted@1@1DDC9A843D966657',
+          'SessionID' => '@encrypted@1@DF9B1AD02A1A81AAD9164EA4703A3087F6EBBAD71B617F301415B574C8B4F261794145531D13FE71',
+          'language'  => $this->config['formLanguage']
         )
       )
     );
@@ -67,6 +89,7 @@ class testPage {
     </head>
     <body>
     ' . $this->menu() . '
+    <h2>' . $this->menu[$_GET['page']] . '</h2>
     <div class="form">' . $this->showContent() . '</div>
     <div class="show_result"></div>
     </body>
@@ -75,9 +98,6 @@ class testPage {
   }
 
   private function showContent() {
-    if ($_GET['page']) {
-      $_GET['page'] = htmlentities($_GET['page']);
-    }
     if (!$this->menu[$_GET['page']] || !$this->form[$_GET['page']]) {
       return 'Выберите форму из меню';
     } else {
@@ -116,7 +136,8 @@ class testPage {
   private function menu() {
     $menuStr = array();
     foreach ($this->menu as $key => $value) {
-      $menuStr[] = '<li><a href="?page=' . $key . '">' . $value . '</a></li>' . "\n";
+      $class = $key == $_GET['page'] ? 'active' : '';
+      $menuStr[] = '<li class="' . $class . '"><a href="?page=' . $key . '">' . $value . '</a></li>' . "\n";
     }
     return '<ul class="menu">' . implode('', $menuStr) . '</ul>';
   }
