@@ -20,14 +20,14 @@ class eCommerce {
       'response' => array()
     );
     $this->config = array(
-      'url'                    => '',
+      'url'                    => '',             // адрес для выполнения запроса
       'merchantid'             => '',
       'area'                   => 'development',  // development / production
-      'logShow'                => FALSE,          // FALSE / write / print
+      'logShow'                => FALSE,          // write / print / FALSE
       'logCurl'                => 'standart',     // standart / full
       'dirLog'                 => 'log',
       'dirCert'                => '',
-      'data'                   => 'json',
+      'data'                   => 'json',         // json / text формат возврата данных
       'curl_referer'           => '',
       'curl_Ssl'               => FALSE,          // отправка сертификата
       'curl_sslVerifypeer'     => FALSE,
@@ -208,8 +208,8 @@ class eCommerce {
     if ($this->config['curl_Ssl']) {
 
       $certificateRequest = $this->config['dirCert'] . 'name.csr';  // CERTIFICATE REQUEST
-      $certificate = $this->config['dirCert'] . '9902200976.crt';   // CERTIFICATE
-      $privateKey = $this->config['dirCert'] . 'privatekey.key';    // PRIVATE KEY
+      $certificate = $this->config['dirCert'] . 'test.crt';         // CERTIFICATE
+      $privateKey = $this->config['dirCert'] . 'test.key';          // PRIVATE KEY
 
       curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE); //  запретит проверки сертификата удаленного сервера
       curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);     //  1 означает проверку существования имени, значение 2 - кроме того, и проверку соответствия имени хоста.

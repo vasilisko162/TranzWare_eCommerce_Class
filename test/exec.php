@@ -1,19 +1,7 @@
 <?php
 
 include('../class/eCommerce.class');
-
-$config = array(
-  'url'          => 'https://twpg-test.siab.ru/exec',
-  'merchantid'   => '9902200976',
-  'area'         => 'development',
-  'logShow'      => TRUE,
-  'logCurl'      => 'full',
-  'data'         => 'json',
-  'curl_referer' => 'https://site.name',
-  'curl_Ssl'     => TRUE,
-  'dirCert'      => $_SERVER['DOCUMENT_ROOT'] . '/test/certs/'
-);
-
+include('config/config.php');
 
 $exec = new eCommerce($config);
 $result = array();
