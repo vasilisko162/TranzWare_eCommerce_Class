@@ -182,6 +182,8 @@ class eCommerce {
       $this->log[] = 'Получена не вся информация от Банка';
     } else if ($type == 'data') {
       $this->log[] = 'Не получена информация от Банка';
+    } else if ($type == 'http_code') {
+      $this->log[] = 'Сервер вернул страницу с ошибкой';
     }
 
     $this->log[] = 'ОШИБКА ' . $type;
@@ -297,6 +299,8 @@ class eCommerce {
     if ($result) {
       if ($result['error']) {
         $this->returnWithError('curl');
+      } else if ($result['getinfo']['http_code'] != '') {
+        $this->returnWithError('http_code');
       } else {
         $this->result['response'] = $this->convertXmlToArray($result['main'])['Response'];
         if ($this->result['response']['Status'] != '00') {
