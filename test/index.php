@@ -1,11 +1,7 @@
 <?php
 
 include('../class/testPage.class');
-$config = array(
-  'formUrl'     => 'https://twpg-test.siab.ru',
-  'formReferer' => 'https://siab.ru',
-  'formAmount'  => '',
-  'formCurrency' => ''
-);
+include('config/config.testPage.php');
+
 $page = new testPage($config);
 echo $page->showPage();
