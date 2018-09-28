@@ -92,7 +92,7 @@ class eCommerce {
     $xml[] = '<Order>';
     $xml[] = '<OrderType>QuasiCash</OrderType>';
     $xml[] = '<Merchant>' . $this->config['merchantid'] . '</Merchant>';
-    $xml[] = '<Amount>' . $_POST['amount'] . '</Amount>';
+    $xml[] = '<Amount>' . ($_POST['amount'] * 100) . '</Amount>';
     $xml[] = '<Currency>' . $_POST['currency'] . '</Currency>';
     $xml[] = '<Description>' . $_POST['description'] . '</Description>';
     $xml[] = '<ApproveURL>' . $_POST['approveurl'] . '</ApproveURL>';
@@ -137,7 +137,7 @@ class eCommerce {
     $xml[] = '<Order>';
     $xml[] = '<Merchant>' . $this->config['merchantid'] . '</Merchant>';
     $xml[] = '<OrderType>Purchase</OrderType>';
-    $xml[] = '<Amount>' . $_POST['amount'] . '</Amount>';
+    $xml[] = '<Amount>' . ($_POST['amount'] * 100) . '</Amount>';
     $xml[] = '<Currency>' . $_POST['currency'] . '</Currency>';
     $xml[] = '<Description>' . $_POST['description'] . '</Description>';
     $xml[] = '<ApproveURL>' . $_POST['approveurl'] . '</ApproveURL>';
@@ -299,7 +299,7 @@ class eCommerce {
     if ($result) {
       if ($result['error']) {
         $this->returnWithError('curl');
-      } else if ($result['getinfo']['http_code'] != '') {
+      } else if ($result['getinfo']['http_code'] != '200') {
         $this->returnWithError('http_code');
       } else {
         $this->result['response'] = $this->convertXmlToArray($result['main'])['Response'];
