@@ -47,8 +47,12 @@ class eCommerce {
     $this->checkConfig();
   }
 
-  function exec_CreateOrder_GetOrderStatus() {
+  function exec_CreateOrder_GetOrderStatus($array) {
     $this->log[] = 'Выполняется GetOrderStatus';
+    $this->checkArray($array, array(
+      'OrderID',
+      'SessionID'
+    ));
 
     $xml = array();
     $xml[] = '<TKKPG>';
@@ -57,9 +61,9 @@ class eCommerce {
     $xml[] = '<Language>' . $this->config['language'] . '</Language>';
     $xml[] = '<Order>';
     $xml[] = '<Merchant>' . $this->config['merchantid'] . '</Merchant>';
-    $xml[] = '<OrderID>' . $_POST['OrderID'] . '</OrderID>';
+    $xml[] = '<OrderID>' . $array['OrderID'] . '</OrderID>';
     $xml[] = '</Order>';
-    $xml[] = '<SessionID>' . $_POST['SessionID'] . '</SessionID>';
+    $xml[] = '<SessionID>' . $array['SessionID'] . '</SessionID>';
     $xml[] = '</Request>';
     $xml[] = '</TKKPG>';
 
@@ -73,16 +77,24 @@ class eCommerce {
     }
 
     $this->result['data'] = array(
-      'OrderID'       => $order['OrderID'],
-      'OrderStatus'   => $order['OrderStatus']
+      'OrderID'     => $order['OrderID'],
+      'OrderStatus' => $order['OrderStatus']
     );
     $this->result['operation'] = $this->result['response']['Operation'];
     $this->result['status'] = 'accept';
     return $this->returnResult();
   }
 
-  function exec_CreateOrder_QuasiCash() {
+  function exec_CreateOrder_QuasiCash($array) {
     $this->log[] = 'Выполняется QuasiCash';
+    $this->checkArray($array, array(
+      'amount',
+      'currency',
+      'description',
+      'approveurl',
+      'cancelurl',
+      'declineurl'
+    ));
 
     $xml = array();
     $xml[] = '<TKKPG>';
@@ -92,15 +104,15 @@ class eCommerce {
     $xml[] = '<Order>';
     $xml[] = '<OrderType>QuasiCash</OrderType>';
     $xml[] = '<Merchant>' . $this->config['merchantid'] . '</Merchant>';
-    $xml[] = '<Amount>' . ($_POST['amount'] * 100) . '</Amount>';
-    $xml[] = '<Currency>' . $_POST['currency'] . '</Currency>';
-    $xml[] = '<Description>' . $_POST['description'] . '</Description>';
-    $xml[] = '<ApproveURL>' . $_POST['approveurl'] . '</ApproveURL>';
-    $xml[] = '<CancelURL>' . $_POST['cancelurl'] . '</CancelURL>';
-    $xml[] = '<DeclineURL>' . $_POST['declineurl'] . '</DeclineURL>';
+    $xml[] = '<Amount>' . ($array['amount'] * 100) . '</Amount>';
+    $xml[] = '<Currency>' . $array['currency'] . '</Currency>';
+    $xml[] = '<Description>' . $array['description'] . '</Description>';
+    $xml[] = '<ApproveURL>' . $array['approveurl'] . '</ApproveURL>';
+    $xml[] = '<CancelURL>' . $array['cancelurl'] . '</CancelURL>';
+    $xml[] = '<DeclineURL>' . $array['declineurl'] . '</DeclineURL>';
     $xml[] = '<AddParams>';
-    $xml[] = '<OrigAmount>' . $_POST['OrigAmount'] . '</OrigAmount>';
-    $xml[] = '<OrigCurrency>' . $_POST['OrigCurrency'] . '</OrigCurrency>';
+    $xml[] = '<OrigAmount>' . $array['OrigAmount'] . '</OrigAmount>';
+    $xml[] = '<OrigCurrency>' . $array['OrigCurrency'] . '</OrigCurrency>';
     $xml[] = '</AddParams>';
     $xml[] = '</Order>';
     $xml[] = '</Request>';
@@ -126,8 +138,16 @@ class eCommerce {
     return $this->returnResult();
   }
 
-  function exec_CreateOrder_Purchase() {
+  function exec_CreateOrder_Purchase($array) {
     $this->log[] = 'Выполняется CreateOrder';
+    $this->checkArray($array, array(
+      'amount',
+      'currency',
+      'description',
+      'approveurl',
+      'cancelurl',
+      'declineurl'
+    ));
 
     $xml = array();
     $xml[] = '<TKKPG>';
@@ -137,12 +157,12 @@ class eCommerce {
     $xml[] = '<Order>';
     $xml[] = '<Merchant>' . $this->config['merchantid'] . '</Merchant>';
     $xml[] = '<OrderType>Purchase</OrderType>';
-    $xml[] = '<Amount>' . ($_POST['amount'] * 100) . '</Amount>';
-    $xml[] = '<Currency>' . $_POST['currency'] . '</Currency>';
-    $xml[] = '<Description>' . $_POST['description'] . '</Description>';
-    $xml[] = '<ApproveURL>' . $_POST['approveurl'] . '</ApproveURL>';
-    $xml[] = '<CancelURL>' . $_POST['cancelurl'] . '</CancelURL>';
-    $xml[] = '<DeclineURL>' . $_POST['declineurl'] . '</DeclineURL>';
+    $xml[] = '<Amount>' . ($array['amount'] * 100) . '</Amount>';
+    $xml[] = '<Currency>' . $array['currency'] . '</Currency>';
+    $xml[] = '<Description>' . $array['description'] . '</Description>';
+    $xml[] = '<ApproveURL>' . $array['approveurl'] . '</ApproveURL>';
+    $xml[] = '<CancelURL>' . $array['cancelurl'] . '</CancelURL>';
+    $xml[] = '<DeclineURL>' . $array['declineurl'] . '</DeclineURL>';
     $xml[] = '<AddParams>';
     $xml[] = '<OrigAmount/>';
     $xml[] = '<OrigCurrency/>';
@@ -171,19 +191,43 @@ class eCommerce {
     return $this->returnResult();
   }
 
-  private function returnWithError($type = '') {
+  private function checkArray($array, $arrayValue) {
+    if (!is_array($array)) {
+      $this->returnWithError('data');
+    }
+    foreach ($arrayValue as $item) {
+      if (!$array[$item]) {
+        $this->returnWithError('data', 'Не получена переменная ' . $item);
+      }
+    }
+    return TRUE;
+  }
+
+  private function returnWithError($type = '', $str = '') {
     $this->result['status'] = 'error';
-    if ($type == 'status') {
-      $type = 'by response status';
-      $this->result['data']['status'] = $this->result['response']['Status'];
-    } else if ($type == 'curl') {
-      $type = 'execute error';
-    } else if ($type == 'response') {
-      $this->log[] = 'Получена не вся информация от Банка';
-    } else if ($type == 'data') {
-      $this->log[] = 'Не получена информация от Банка';
-    } else if ($type == 'http_code') {
-      $this->log[] = 'Сервер вернул страницу с ошибкой';
+    switch ($type) {
+      case 'status':
+        $type = 'by response status';
+        $this->result['data']['status'] = $this->result['response']['Status'];
+        break;
+      case 'curl':
+        $type = 'execute error';
+        break;
+      case 'response':
+        $this->log[] = 'Получена не вся информация от Банка';
+        break;
+      case 'data':
+        $this->log[] = 'Получена не вся информация';
+        break;
+      case 'http_code':
+        $this->log[] = 'Сервер вернул страницу с ошибкой';
+        break;
+      default:
+        $this->log[] = 'Произошла неизвестная ошибка';
+    }
+
+    if ($str) {
+      $this->log[] = $str;
     }
 
     $this->log[] = 'ОШИБКА ' . $type;

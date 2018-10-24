@@ -9,13 +9,13 @@ $result = array();
 if ($_POST['action']) {
   switch ($_POST['action']) {
     case 'GetOrderStatus':
-      $result = $exec->exec_CreateOrder_GetOrderStatus();
+      $result = $exec->exec_CreateOrder_GetOrderStatus($array = $_POST);
       break;
     case 'Purchase':
-      $result = $exec->exec_CreateOrder_Purchase();
+      $result = $exec->exec_CreateOrder_Purchase($array = $_POST);
       break;
     case 'QuasiCash':
-      $result = $exec->exec_CreateOrder_QuasiCash();
+      $result = $exec->exec_CreateOrder_QuasiCash($array = $_POST);
       break;
     default:
       $temp['status'] = 'error';
