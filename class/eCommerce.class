@@ -149,11 +149,16 @@ class eCommerce {
       'declineurl'
     ));
 
+    $language = $this->config['language'];
+    if ($array['language']) {
+      $language = $array['language'];
+    }
+
     $xml = array();
     $xml[] = '<TKKPG>';
     $xml[] = '<Request>';
     $xml[] = '<Operation>CreateOrder</Operation>';
-    $xml[] = '<Language>' . $this->config['language'] . '</Language>';
+    $xml[] = '<Language>' . $language . '</Language>';
     $xml[] = '<Order>';
     $xml[] = '<Merchant>' . $this->config['merchantid'] . '</Merchant>';
     $xml[] = '<OrderType>Purchase</OrderType>';
@@ -249,6 +254,8 @@ class eCommerce {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_POST, 1);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $xml);
+
+
 
     // TODO доделать работу с сертификатами
     if ($this->config['curl_Ssl']) {

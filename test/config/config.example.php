@@ -8,7 +8,8 @@ $config = array(
   'data'         => 'json',               // json / text формат возврата данных. По умолчанию: json
   'curl_referer' => 'https://site.name',  // Страница, откуда идет запрос
   'curl_Ssl'     => TRUE,                 // TRUE / FALSE Использовать сертификат при отправке запроса
-  'dirCert'      => '/certs/'             // Директория, где лежат сертификаты
+  'dirCert'      => '/certs/',            // Директория, где лежат сертификаты
+  'language'     => 'RU'
 );
 
 ?>
