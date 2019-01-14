@@ -1,4 +1,6 @@
 <?php
+// Вывод ошибок, кроме E_NOTICE
+error_reporting(E_ALL & ~E_NOTICE);
 
 include('../class/eCommerce.class');
 include('config/config.php');
