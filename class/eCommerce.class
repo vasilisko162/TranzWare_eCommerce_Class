@@ -26,9 +26,9 @@ class eCommerce {
       'logShow'                => FALSE,          // write / print / FALSE
       'logCurl'                => 'standart',     // standart / full
       'dirLog'                 => 'log',
-      'dirCert'                => '',
+      'dirCert'                => '',             // Ссылка на сертификат
       'data'                   => 'json',         // json / text формат возврата данных
-      'curl_referer'           => '',
+      'curl_referer'           => '',             // Страница, откуда идет запрос
       'curl_Ssl'               => FALSE,          // отправка сертификата
       'curl_sslVerifypeer'     => FALSE,
       'curl_timeout'           => '5',            // максимальное количество секунд для выполнения функций cURL.
@@ -255,24 +255,15 @@ class eCommerce {
     curl_setopt($ch, CURLOPT_POST, 1);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $xml);
 
-
-
-    // TODO доделать работу с сертификатами
     if ($this->config['curl_Ssl']) {
-
-      $certificateRequest = $this->config['dirCert'] . 'name.csr';  // CERTIFICATE REQUEST
-      $certificate = $this->config['dirCert'] . 'test.crt';         // CERTIFICATE
-      $privateKey = $this->config['dirCert'] . 'test.key';          // PRIVATE KEY
+      $certificate = $this->config['dirCert']; // CERTIFICATE
 
       curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE); //  запретит проверки сертификата удаленного сервера
       curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);     //  1 означает проверку существования имени, значение 2 - кроме того, и проверку соответствия имени хоста.
-      curl_setopt($ch, CURLOPT_SSLKEY, $privateKey);
       curl_setopt($ch, CURLOPT_SSLCERT, $certificate);
-      //curl_setopt($ch, CURLOPT_CAINFO, $certificateRequest);
 
       $this->log[] = 'Подключение сертификатов:';
       $this->log[] = 'CERTIFICATE: ' . $certificate;
-      $this->log[] = 'PRIVATE KEY: ' . $privateKey;
     }
 
 
@@ -412,9 +403,9 @@ class eCommerce {
       $configCheck = FALSE;
       $textError[] = 'Не указан <b>merchantid</b>';
     }
-    if ($this->config['curl_Ssl'] && (!$this->config['dirCert'] || !is_dir($this->config['dirCert']))) {
+    if ($this->config['curl_Ssl'] && (!$this->config['dirCert'] || !is_file($this->config['dirCert']))) {
       $configCheck = FALSE;
-      $textError[] = 'Не указан <b>dirCert</b> или путь не найден';
+      $textError[] = 'Не указан <b>dirCert</b> или сертификат не найден';
       $textError[] = 'dir: ' . $this->config['dirCert'];
     }
 
