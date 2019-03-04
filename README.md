@@ -4,8 +4,8 @@
 Compassplus: TranzWare eCommerce
 
 ## Информация
-* version: 0.0.2
-* date: 08.09.2018
+* version: 0.0.3
+* date: 04.03.2019
 
 ### Подключение
 
@@ -35,7 +35,7 @@ $exec = new eCommerce($config);
 |data| Формат возврата данных. json / text. По умолчанию: json|
 |curl_referer| Страница, откуда идет запрос|
 |curl_Ssl| Использовать сертификат при отправке запроса. TRUE / FALSE |
-|dirCert| Директория, где лежат сертификаты|
+|dirCert| Ссылка до сертификата|
 
 
 ### Операции
