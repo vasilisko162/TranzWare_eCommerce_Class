@@ -2,8 +2,8 @@
 /**
  * Created by Vasiliy Ivanov
  * client: Bank SIAB
- * Version: 0.0.3
- * Date: 04.03.2019
+ * Version: 0.0.4
+ * Date: 05.03.2019
  * email: vasilisko@gmail.com
  */
 
@@ -26,7 +26,8 @@ class eCommerce {
       'logShow'                => FALSE,          // write / print / FALSE
       'logCurl'                => 'standart',     // standart / full
       'dirLog'                 => 'log',
-      'dirCert'                => '',             // Ссылка на сертификат
+      'fileCert'               => '',             // Ссылка на сертификат
+      'fileCertKey'            => '',             // Ссылка на ключ для сертификата
       'data'                   => 'json',         // json / text формат возврата данных
       'curl_referer'           => '',             // Страница, откуда идет запрос
       'curl_Ssl'               => FALSE,          // отправка сертификата
@@ -256,11 +257,14 @@ class eCommerce {
     curl_setopt($ch, CURLOPT_POSTFIELDS, $xml);
 
     if ($this->config['curl_Ssl']) {
-      $certificate = $this->config['dirCert']; // CERTIFICATE
+      $certificate = $this->config['fileCert']; // CERTIFICATE
+      $privateKey = $this->config['fileCertKey']; // PRIVATE KEY
 
       curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE); //  запретит проверки сертификата удаленного сервера
       curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);     //  1 означает проверку существования имени, значение 2 - кроме того, и проверку соответствия имени хоста.
+
       curl_setopt($ch, CURLOPT_SSLCERT, $certificate);
+      curl_setopt($ch, CURLOPT_SSLKEY, $privateKey);
 
       $this->log[] = 'Подключение сертификатов:';
       $this->log[] = 'CERTIFICATE: ' . $certificate;
@@ -403,11 +407,18 @@ class eCommerce {
       $configCheck = FALSE;
       $textError[] = 'Не указан <b>merchantid</b>';
     }
-    if ($this->config['curl_Ssl'] && (!$this->config['dirCert'] || !is_file($this->config['dirCert']))) {
-      $configCheck = FALSE;
-      $textError[] = 'Не указан <b>dirCert</b> или сертификат не найден';
-      $textError[] = 'dir: ' . $this->config['dirCert'];
+    if ($this->config['curl_Ssl']) {
+      if (!$this->config['fileCert'] || !is_file($this->config['fileCert'])) {
+        $configCheck = FALSE;
+        $textError[] = 'Не указан <b>fileCert</b> или сертификат не найден';
+        $textError[] = 'dir: ' . $this->config['fileCert'];
+      } else if (!$this->config['fileCertKey'] || !is_file($this->config['fileCertKey'])) {
+        $configCheck = FALSE;
+        $textError[] = 'Не указан <b>fileCertKey</b> или ключ для сертификата не найден';
+        $textError[] = 'dir: ' . $this->config['fileCertKey'];
+      }
     }
+
 
     if (!$configCheck) {
       foreach ($textError as $item) {
