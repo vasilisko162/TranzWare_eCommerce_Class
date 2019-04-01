@@ -348,7 +348,8 @@ class eCommerce {
       } else if ($result['getinfo']['http_code'] != '200') {
         $this->returnWithError('http_code');
       } else {
-        $this->result['response'] = $this->convertXmlToArray($result['main'])['Response'];
+        $temp = $this->convertXmlToArray($result['main']);
+        $this->result['response'] = $temp['Response'];
         if ($this->result['response']['Status'] != '00') {
           $this->returnWithError('status');
         }
@@ -383,7 +384,7 @@ class eCommerce {
   }
 
   private function returnResultJson() {
-    return json_encode($this->result, TRUE);
+    return json_encode($this->result);
   }
 
   private function returnHeader($array) {
