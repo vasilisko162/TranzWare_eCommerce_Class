@@ -1,6 +1,6 @@
 $(document).ready(function() {
-  $('.form-ecom').submit(function() {
-    var form_id = '.form-ecom';
+  $('.form-ecom-submit').submit(function() {
+    var form_id = '.form-ecom-submit';
     $.ajax({
       type: 'POST',
       dataType: 'json', // html / json,

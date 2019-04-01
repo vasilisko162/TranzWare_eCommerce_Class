@@ -33,8 +33,10 @@ class testPage {
     $this->menu = array(
       'form_001' => 'Создание заказа на покупку (Purchase)',
       'form_002' => 'Создание заказа на покупку квази-наличных (QuasiCash)',
-      'form_003' => 'Получение статуса заказа (GetOrderStatus)'
+      'form_003' => 'Получение статуса заказа (GetOrderStatus)',
+      'option'   => 'Настройки'
     );
+
     $this->form = array(
       'form_001' => array(
         'action' => 'Purchase',
@@ -98,10 +100,14 @@ class testPage {
   }
 
   private function showContent() {
-    if (!$this->menu[$_GET['page']] || !$this->form[$_GET['page']]) {
-      return 'Выберите форму из меню';
-    } else {
-      return $this->createForm($_GET['page']);
+    if ($this->menu[$_GET['page']]) {
+      if ($this->form[$_GET['page']]) {
+        return $this->createForm($_GET['page']);
+      } else if($_GET['page'] == 'option') {
+        return $this->showOption();
+      } else {
+        return 'Выберите форму из меню';
+      }
     }
   }
 
@@ -110,7 +116,7 @@ class testPage {
     $form['row']['action'] = $form['action'];
     $html = array();
 
-    $html[] = '<form method="post" id="' . $form['action'] . '" class="form-ecom">';
+    $html[] = '<form method="post" id="' . $form['action'] . '" class="form-ecom form-ecom-submit">';
     $html[] = '<ul>';
 
     if (count($form['row'])) {
@@ -131,6 +137,118 @@ class testPage {
       <div class="field"><input type="submit" name="submit" value="submit"></div>
     </li></ul></form>';
     return implode('', $html);
+  }
+
+  private function showOption() {
+    $configFile = $this->config['configFile'];
+    if (file_exists($configFile)) {
+      $html = array();
+
+      if ($_POST || $_FILES) {
+        include $configFile;
+        $eCommerceConfig = $config;
+        $html[] = $this->updateOption($eCommerceConfig);
+      }
+
+      include $configFile;
+      $eCommerceConfig = $config;
+
+      $html[] = '<form method="post" id="Option" class="form-ecom" enctype="multipart/form-data"><ul>';
+      foreach ($this->config['configArray'] as $item) {
+        $html[] = '<li>
+          <div class="name">'.$item.'</div>
+          <div class="field"><input type="text" name="'.$item.'" value="'.$eCommerceConfig[$item].'"></div>
+        </li>';
+      }
+
+      $html[] = '<li>
+        <div class="name">fileCert</div>
+        <div class="field"><input type="file" name="fileCertUpload"></div>
+      </li>';
+
+      $html[] = '<li>
+        <div class="name">fileCertKey</div>
+        <div class="field"><input type="file" name="fileCertKeyUpload"></div>
+      </li>';
+
+
+      $html[] = '<li>
+        <div class="name">&nbsp;</div>
+        <div class="field"><input type="submit" name="submit" value="submit"></div>
+      </li>';
+      $html[] = '</ul></form>';
+
+      return implode('', $html);
+    } else {
+      return 'Не удалось загрузить файл конфигурации: ' . $configFile;
+    }
+
+
+    $text = '<pre>'.print_r($eCommerceConfig,true).'</pre>';
+    return $text;
+  }
+
+  private function updateOption($eCommerceConfig) {
+    $html = array();
+
+    if (isset($_POST)) {
+      $countAll = count($_POST) - 1;
+      $i = 0;
+      $text = array();
+      $text[] = '<?php';
+      $text[] = '$config = array(';
+      foreach ($_POST as $key => $value) {
+        $i++;
+        if ($key != 'submit') {
+          if ($countAll == $i) {
+            $z = '';
+          } else {
+            $z = ',';
+          }
+          $text[] = '  \''.$key.'\' => \''.$value.'\'' . $z;
+        }
+      }
+      $text[] = ');';
+      $text[] = '?>';
+
+      $fileName = $this->config['configFile'];
+
+      if (is_writable($fileName)) {
+        $content = implode("\n",$text);
+        if ($handle = fopen($fileName, 'w')) {
+          fwrite($handle, $content);
+          fclose($handle);
+        }
+      }
+    }
+
+    if (isset($_FILES)) {
+      if ($this->uploadFile($eCommerceConfig, $_FILES['fileCertUpload'], 'fileCert')) {
+        $html[] = 'Сертификат загружен<br>';
+      } else {
+        $html[] = 'Сертификат не загружен<br>';
+      }
+      if ($this->uploadFile($eCommerceConfig, $_FILES['fileCertKeyUpload'], 'fileCertKey')) {
+        $html[] = 'Ключ загружен<br>';
+      } else {
+        $html[] = 'Ключ не загружен<br>';
+      }
+    }
+
+    return implode('', $html);
+  }
+
+  private function uploadFile($eCommerceConfig, $array, $fileName) {
+    if ($array['error'] == 0) {
+      $destiation = $eCommerceConfig[$fileName];
+      if (file_exists($destiation)) {
+        unlink($destiation);
+      }
+      move_uploaded_file($array['tmp_name'], $destiation);
+      return true;
+    } else {
+      return false;
+    }
   }
 
   private function menu() {
