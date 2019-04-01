@@ -141,16 +141,16 @@ class testPage {
 
   private function showOption() {
     $configFile = $this->config['configFile'];
-    if (file_exists($configFile)) {
+    if (file_exists($_SERVER['DOCUMENT_ROOT'] . $configFile)) {
       $html = array();
 
       if ($_POST || $_FILES) {
-        include $configFile;
+        include $_SERVER['DOCUMENT_ROOT'] . $configFile;
         $eCommerceConfig = $config;
         $html[] = $this->updateOption($eCommerceConfig);
       }
 
-      include $configFile;
+      include $_SERVER['DOCUMENT_ROOT'] . $configFile;
       $eCommerceConfig = $config;
 
       $html[] = '<form method="post" id="Option" class="form-ecom" enctype="multipart/form-data"><ul>';
@@ -180,11 +180,9 @@ class testPage {
 
       return implode('', $html);
     } else {
-      return 'Не удалось загрузить файл конфигурации: ' . $configFile;
+      return 'Не удалось загрузить файл конфигурации: ' . $_SERVER['DOCUMENT_ROOT'] . $configFile;
     }
 
-
-    $text = '<pre>'.print_r($eCommerceConfig,true).'</pre>';
     return $text;
   }
 
@@ -211,7 +209,7 @@ class testPage {
       $text[] = ');';
       $text[] = '?>';
 
-      $fileName = $this->config['configFile'];
+      $fileName = $_SERVER['DOCUMENT_ROOT'] . $this->config['configFile'];
 
       if (is_writable($fileName)) {
         $content = implode("\n",$text);
@@ -240,7 +238,7 @@ class testPage {
 
   private function uploadFile($eCommerceConfig, $array, $fileName) {
     if ($array['error'] == 0) {
-      $destiation = $eCommerceConfig[$fileName];
+      $destiation = $_SERVER['DOCUMENT_ROOT'] . $eCommerceConfig[$fileName];
       if (file_exists($destiation)) {
         unlink($destiation);
       }
