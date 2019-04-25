@@ -2,8 +2,8 @@
 /**
  * Created by Vasiliy Ivanov
  * client: Bank SIAB
- * Version: 0.0.4
- * Date: 05.03.2019
+ * version: 0.0.5
+ * date: 25.04.2019
  * email: vasilisko@gmail.com
  */
 
@@ -48,7 +48,7 @@ class eCommerce {
     $this->checkConfig();
   }
 
-  function exec_CreateOrder_GetOrderStatus($array) {
+  function exec_GetOrderStatus($array) {
     $this->log[] = 'Выполняется GetOrderStatus';
     $this->checkArray($array, array(
       'OrderID',
@@ -57,15 +57,15 @@ class eCommerce {
 
     $xml = array();
     $xml[] = '<TKKPG>';
-    $xml[] = '<Request>';
-    $xml[] = '<Operation>GetOrderStatus</Operation>';
-    $xml[] = '<Language>' . $this->config['language'] . '</Language>';
-    $xml[] = '<Order>';
-    $xml[] = '<Merchant>' . $this->config['merchantid'] . '</Merchant>';
-    $xml[] = '<OrderID>' . $array['OrderID'] . '</OrderID>';
-    $xml[] = '</Order>';
-    $xml[] = '<SessionID>' . $array['SessionID'] . '</SessionID>';
-    $xml[] = '</Request>';
+      $xml[] = '<Request>';
+        $xml[] = '<Operation>GetOrderStatus</Operation>';
+        $xml[] = '<Language>' . $this->config['language'] . '</Language>';
+        $xml[] = '<Order>';
+          $xml[] = '<Merchant>' . $this->config['merchantid'] . '</Merchant>';
+          $xml[] = '<OrderID>' . $array['OrderID'] . '</OrderID>';
+        $xml[] = '</Order>';
+        $xml[] = '<SessionID>' . $array['SessionID'] . '</SessionID>';
+      $xml[] = '</Request>';
     $xml[] = '</TKKPG>';
 
     $xmlSend = implode('', $xml);
@@ -86,8 +86,8 @@ class eCommerce {
     return $this->returnResult();
   }
 
-  function exec_CreateOrder_QuasiCash($array) {
-    $this->log[] = 'Выполняется QuasiCash';
+  function exec_QuasiCash($array) {
+    $this->log[] = 'Выполняется CreateOrder - QuasiCash';
     $this->checkArray($array, array(
       'amount',
       'currency',
@@ -99,24 +99,24 @@ class eCommerce {
 
     $xml = array();
     $xml[] = '<TKKPG>';
-    $xml[] = '<Request>';
-    $xml[] = '<Operation>CreateOrder</Operation>';
-    $xml[] = '<Language>' . $this->config['language'] . '</Language>';
-    $xml[] = '<Order>';
-    $xml[] = '<OrderType>QuasiCash</OrderType>';
-    $xml[] = '<Merchant>' . $this->config['merchantid'] . '</Merchant>';
-    $xml[] = '<Amount>' . ($array['amount'] * 100) . '</Amount>';
-    $xml[] = '<Currency>' . $array['currency'] . '</Currency>';
-    $xml[] = '<Description>' . $array['description'] . '</Description>';
-    $xml[] = '<ApproveURL>' . $array['approveurl'] . '</ApproveURL>';
-    $xml[] = '<CancelURL>' . $array['cancelurl'] . '</CancelURL>';
-    $xml[] = '<DeclineURL>' . $array['declineurl'] . '</DeclineURL>';
-    $xml[] = '<AddParams>';
-    $xml[] = '<OrigAmount>' . $array['OrigAmount'] . '</OrigAmount>';
-    $xml[] = '<OrigCurrency>' . $array['OrigCurrency'] . '</OrigCurrency>';
-    $xml[] = '</AddParams>';
-    $xml[] = '</Order>';
-    $xml[] = '</Request>';
+      $xml[] = '<Request>';
+        $xml[] = '<Operation>CreateOrder</Operation>';
+        $xml[] = '<Language>' . $this->config['language'] . '</Language>';
+        $xml[] = '<Order>';
+          $xml[] = '<OrderType>QuasiCash</OrderType>';
+          $xml[] = '<Merchant>' . $this->config['merchantid'] . '</Merchant>';
+          $xml[] = '<Amount>' . ($array['amount'] * 100) . '</Amount>';
+          $xml[] = '<Currency>' . $array['currency'] . '</Currency>';
+          $xml[] = '<Description>' . $array['description'] . '</Description>';
+          $xml[] = '<ApproveURL>' . $array['approveurl'] . '</ApproveURL>';
+          $xml[] = '<CancelURL>' . $array['cancelurl'] . '</CancelURL>';
+          $xml[] = '<DeclineURL>' . $array['declineurl'] . '</DeclineURL>';
+          $xml[] = '<AddParams>';
+            $xml[] = '<OrigAmount>' . $array['OrigAmount'] . '</OrigAmount>';
+            $xml[] = '<OrigCurrency>' . $array['OrigCurrency'] . '</OrigCurrency>';
+          $xml[] = '</AddParams>';
+        $xml[] = '</Order>';
+      $xml[] = '</Request>';
     $xml[] = '</TKKPG>';
 
     $xmlSend = implode('', $xml);
@@ -139,8 +139,8 @@ class eCommerce {
     return $this->returnResult();
   }
 
-  function exec_CreateOrder_Purchase($array) {
-    $this->log[] = 'Выполняется CreateOrder';
+  function exec_Purchase($array) {
+    $this->log[] = 'Выполняется CreateOrder - Purchase';
     $this->checkArray($array, array(
       'amount',
       'currency',
@@ -157,24 +157,81 @@ class eCommerce {
 
     $xml = array();
     $xml[] = '<TKKPG>';
-    $xml[] = '<Request>';
-    $xml[] = '<Operation>CreateOrder</Operation>';
-    $xml[] = '<Language>' . $language . '</Language>';
-    $xml[] = '<Order>';
-    $xml[] = '<Merchant>' . $this->config['merchantid'] . '</Merchant>';
-    $xml[] = '<OrderType>Purchase</OrderType>';
-    $xml[] = '<Amount>' . ($array['amount'] * 100) . '</Amount>';
-    $xml[] = '<Currency>' . $array['currency'] . '</Currency>';
-    $xml[] = '<Description>' . $array['description'] . '</Description>';
-    $xml[] = '<ApproveURL>' . $array['approveurl'] . '</ApproveURL>';
-    $xml[] = '<CancelURL>' . $array['cancelurl'] . '</CancelURL>';
-    $xml[] = '<DeclineURL>' . $array['declineurl'] . '</DeclineURL>';
-    $xml[] = '<AddParams>';
-    $xml[] = '<OrigAmount/>';
-    $xml[] = '<OrigCurrency/>';
-    $xml[] = '</AddParams>';
-    $xml[] = '</Order>';
-    $xml[] = '</Request>';
+      $xml[] = '<Request>';
+        $xml[] = '<Operation>CreateOrder</Operation>';
+        $xml[] = '<Language>' . $language . '</Language>';
+        $xml[] = '<Order>';
+          $xml[] = '<Merchant>' . $this->config['merchantid'] . '</Merchant>';
+          $xml[] = '<OrderType>Purchase</OrderType>';
+          $xml[] = '<Amount>' . ($array['amount'] * 100) . '</Amount>';
+          $xml[] = '<Currency>' . $array['currency'] . '</Currency>';
+          $xml[] = '<Description>' . $array['description'] . '</Description>';
+          $xml[] = '<ApproveURL>' . $array['approveurl'] . '</ApproveURL>';
+          $xml[] = '<CancelURL>' . $array['cancelurl'] . '</CancelURL>';
+          $xml[] = '<DeclineURL>' . $array['declineurl'] . '</DeclineURL>';
+          $xml[] = '<AddParams>';
+            $xml[] = '<OrigAmount/>';
+            $xml[] = '<OrigCurrency/>';
+          $xml[] = '</AddParams>';
+        $xml[] = '</Order>';
+      $xml[] = '</Request>';
+    $xml[] = '</TKKPG>';
+
+    $xmlSend = implode('', $xml);
+
+    $this->curlExecute($xmlSend);
+
+    $order = $this->result['response']['Order'];
+    if (!$order['OrderID'] || !$order['SessionID'] || !$order['URL']) {
+      $this->returnWithError('response');
+    }
+
+    $this->result['data'] = array(
+      'URL'       => $order['URL'],
+      'OrderID'   => $order['OrderID'],
+      'SessionID' => $order['SessionID'],
+      'urlFull'   => $order['URL'] . '?OrderID=' . $order['OrderID'] . '&SessionID=' . $order['SessionID']
+    );
+    $this->result['operation'] = $this->result['response']['Operation'];
+    $this->result['status'] = 'accept';
+    return $this->returnResult();
+  }
+
+  function exec_Payment($array) {
+    $this->log[] = 'Выполняется CreateOrder - Payment';
+    $this->checkArray($array, array(
+      'amount',
+      'currency',
+      'description',
+      'approveurl',
+      'cancelurl',
+      'declineurl'
+    ));
+
+    $xml = array();
+    $xml[] = '<TKKPG>';
+      $xml[] = '<Request>';
+        $xml[] = '<Operation>CreateOrder</Operation>';
+        $xml[] = '<Language>' . $this->config['language'] . '</Language>';
+        $xml[] = '<Order>';
+          $xml[] = '<OrderType>Payment</OrderType>';
+          $xml[] = '<Merchant>' . $this->config['merchantid'] . '</Merchant>';
+          $xml[] = '<Amount>' . ($array['amount'] * 100) . '</Amount>';
+          $xml[] = '<Currency>' . $array['currency'] . '</Currency>';
+          $xml[] = '<Description>' . $array['description'] . '</Description>';
+          $xml[] = '<ApproveURL>' . $array['approveurl'] . '</ApproveURL>';
+          $xml[] = '<CancelURL>' . $array['cancelurl'] . '</CancelURL>';
+          $xml[] = '<DeclineURL>' . $array['declineurl'] . '</DeclineURL>';
+          $xml[] = '<AddParams>';
+            $xml[] = '<UserEmail>' . $array['userEmail'] . '</UserEmail>';
+            $xml[] = '<VendorID>' . $array['vendorID'] . '</VendorID>';
+            $xml[] = '<OrigAmount>' . $array['origAmount'] . '</OrigAmount>';
+            $xml[] = '<OrigCurrency>' . $array['origCurrency'] . '</OrigCurrency>';
+            $xml[] = '<PaymentParams>' . $array['paymentParams'] . '</PaymentParams>';
+          $xml[] = '</AddParams>';
+          $xml[] = '<Fee>' . $array['fee'] . '</Fee>';
+        $xml[] = '</Order>';
+      $xml[] = '</Request>';
     $xml[] = '</TKKPG>';
 
     $xmlSend = implode('', $xml);
@@ -321,7 +378,8 @@ class eCommerce {
 
     if ($this->config['logCurl'] == 'full') {
       if ($xml) {
-        $this->log[] = '$xml:<br><textarea>' . $xml . '</textarea>';
+        $xmlShow = str_replace('><',">\n<", $xml);
+        $this->log[] = '$xml:<br><textarea>' . $xmlShow . '</textarea>';
       }
       if (is_array($result) && count($result)) {
         $this->log[] = 'mainData:<br><textarea>' . print_r($result, TRUE) . '</textarea>';
@@ -427,5 +485,15 @@ class eCommerce {
       }
       $this->returnWithError('check config');
     }
+  }
+
+  function exec_CreateOrder_GetOrderStatus($array) {
+    self::exec_GetOrderStatus($array);
+  }
+  function exec_CreateOrder_QuasiCash($array) {
+    self::exec_QuasiCash($array);
+  }
+  function exec_CreateOrder_Purchase($array) {
+    self::exec_Purchase($array);
   }
 }

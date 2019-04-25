@@ -11,13 +11,16 @@ $result = array();
 if ($_POST['action']) {
   switch ($_POST['action']) {
     case 'GetOrderStatus':
-      $result = $exec->exec_CreateOrder_GetOrderStatus($array = $_POST);
+      $result = $exec->exec_GetOrderStatus($array = $_POST);
       break;
     case 'Purchase':
-      $result = $exec->exec_CreateOrder_Purchase($array = $_POST);
+      $result = $exec->exec_Purchase($array = $_POST);
       break;
     case 'QuasiCash':
-      $result = $exec->exec_CreateOrder_QuasiCash($array = $_POST);
+      $result = $exec->exec_QuasiCash($array = $_POST);
+      break;
+    case 'Payment':
+      $result = $exec->exec_Payment($array = $_POST);
       break;
     default:
       $temp['status'] = 'error';

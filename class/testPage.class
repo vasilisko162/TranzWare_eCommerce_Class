@@ -7,6 +7,7 @@ if ($_GET['page']) {
 class testPage {
   var $config;
   var $menu;
+  var $titleInfo;
   var $form;
 
   function __construct($configNew) {
@@ -19,7 +20,11 @@ class testPage {
       'formAmount'      => rand(10, 99) . '0.' . (($a= rand(0,99)) < 10 ? '0' . $a : $a) ,
       'formCurrency'    => '810', // 810 / 643 / 840 / 978
       'formDescription' => 'Описание товара - ' . date('ymd_His'),
-      'formLanguage'    => 'RU'
+      'formLanguage'    => 'RU',
+      'formUserEmail'       => 'mail@mail',
+      'formVendorID'        => '001',
+      'formPaymentParams'   => '+79111321012',
+      'formFee'             => '21'
     );
 
     if (is_array($configNew) && count($configNew)) {
@@ -30,10 +35,31 @@ class testPage {
       }
     }
 
+
+    $this->titleInfo = array(
+      'merchantid'  => '',
+      'referer'     => '',
+      'approveurl'  => '',
+      'cancelurl'   => '',
+      'declineurl'  => '',
+      'amount'      => 'Сумма транзакции в минимальных единицах валюты транзакции',
+      'currency'    => 'Код валюты транзакции (например, 643 – рубли, 840 – доллары США)',
+      'description' => 'Текстовое описание заказа, которое будет отображено для клиента при выполнении платежа в TWEC PG',
+      'language'    => 'Язык интерфейса. Заполняется в соответствии с RFC 1766 двухсимвольным кодом языка (например, RU – русский, EN – английский, UK – украинский и т. д.). По умолчанию EN',
+      'userEmail'       => 'E-mail клиента (дополнительный параметр), который будет сохранен в поле Email в БД TWEC PG',
+      'vendorID'        => 'Идентификатор вендора',
+      'paymentParams'   => 'Параметры платежа (реквизиты вендора). Если необходимо передать несколько информационных полей, то требуется их разделить символом \'/\' (код 0x2F). Если в параметрах платежа необходимо передать спецсимволы «/» и «\», то их требуется экранировать по правилам: символ «\» заменять на «\\»; символ «/» заменять на «\/». Количество передаваемых полей должно совпадать с количеством полей в описании вендора в TWO/TranzAxis',
+      'origAmount'      => 'Оригинальная сумма транзакции в минимальных единицах оригинальной валюты транзакции. Если данный параметр задан, то в транзакции, передаваемой в TWO, будет заполнено подполе D поля a протокола TPTP',
+      'origCurrency'    => 'Оригинальная валюта транзакции. Если данный параметр задан, то в транзакции, передаваемой в TWO, будет заполнено подполе O поля a протокола TPTP',
+      'fee'             => 'Эквайринговая комиссия. При использовании данного параметра в заказе будет заполнено подполе F поля a в протоколе TPTP финансовой транзакции'
+
+    );
+
     $this->menu = array(
       'form_001' => 'Создание заказа на покупку (Purchase)',
       'form_002' => 'Создание заказа на покупку квази-наличных (QuasiCash)',
       'form_003' => 'Получение статуса заказа (GetOrderStatus)',
+      'form_004' => 'Создание заказа на платеж (Payment)',
       'option'   => 'Настройки'
     );
 
@@ -73,7 +99,26 @@ class testPage {
           'SessionID' => '@encrypted@1@DF9B1AD02A1A81AAD9164EA4703A3087F6EBBAD71B617F301415B574C8B4F261794145531D13FE71',
           'language'  => $this->config['formLanguage']
         )
+      ),
+      'form_004' => array(
+      'action' => 'Payment',
+      'row'    => array(
+        'referer'       => $this->config['formReferer'],
+        'amount'        => $this->config['formAmount'],
+        'currency'      => $this->config['formCurrency'],
+        'description'   => $this->config['formDescription'],
+        'approveurl'    => $this->config['formApproveurl'],
+        'cancelurl'     => $this->config['formCancelurl'],
+        'declineurl'    => $this->config['formDeclineurl'],
+        'language'      => $this->config['formLanguage'],
+        'userEmail'     => $this->config['formUserEmail'],
+        'vendorID'      => $this->config['formVendorID'],
+        'origAmount'    => $this->config['formOrigAmount'],
+        'origCurrency'  => $this->config['formOrigCurrency'],
+        'paymentParams' => $this->config['formPaymentParams'],
+        'fee'           => $this->config['formFee']
       )
+    ),
     );
   }
 
@@ -125,8 +170,15 @@ class testPage {
         if (in_array($key, array('url', 'merchantid', 'action'))) {
           $status = ' READONLY';
         }
+
+        if ($this->titleInfo[$key]) {
+          $title = ' title="'.$this->titleInfo[$key].'" style="cursor: help;"';
+        } else {
+          $title = '';
+        }
+
         $html[] = '<li>
-          <div class="name">' . $key . '</div>
+          <div class="name"' . $title . '>' . $key . '</div>
           <div class="field"><input type="text" name="' . $key . '" value="' . $value . '"' . $status . '></div>
         </li>';
       }
@@ -141,10 +193,12 @@ class testPage {
 
   private function showOption() {
     $configFile = $this->config['configFile'];
-    if (file_exists($_SERVER['DOCUMENT_ROOT'] . $configFile)) {
+    $fileName = $_SERVER['DOCUMENT_ROOT'] . $configFile;
+    if (file_exists($fileName)) {
       $html = array();
 
       if ($_POST || $_FILES) {
+        $config = array();
         include $_SERVER['DOCUMENT_ROOT'] . $configFile;
         $eCommerceConfig = $config;
         $html[] = $this->updateOption($eCommerceConfig);
@@ -180,7 +234,7 @@ class testPage {
 
       return implode('', $html);
     } else {
-      return 'Не удалось загрузить файл конфигурации: ' . $_SERVER['DOCUMENT_ROOT'] . $configFile;
+      return 'Не удалось загрузить файл конфигурации: ' . $fileName;
     }
 
     return $text;

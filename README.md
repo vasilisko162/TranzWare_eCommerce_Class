@@ -4,8 +4,8 @@
 Compassplus: TranzWare eCommerce
 
 ## Информация
-* version: 0.0.4
-* date: 05.03.2019
+* version: 0.0.5
+* date: 25.04.2019
 
 ### Подключение
 
@@ -44,7 +44,7 @@ $exec = new eCommerce($config);
 #### Создание заказа на покупку (Purchase)
 Вызов:
 ```php
-$result = $exec->exec_CreateOrder_GetOrderStatus($array);
+$result = $exec->exec_GetOrderStatus($array);
 ```
 |переменная|значение|пример|
 | --- | ----- | ----- |
@@ -73,7 +73,7 @@ $result = $exec->exec_CreateOrder_GetOrderStatus($array);
 #### Создание заказа на покупку квази-наличных (QuasiCash)
 Вызов:
 ```php
-$result = $exec->exec_CreateOrder_QuasiCash($array);
+$result = $exec->exec_QuasiCash($array);
 ```
 |переменная|значение|пример|
 | --- | ----- | ----- |
@@ -105,7 +105,7 @@ $result = $exec->exec_CreateOrder_QuasiCash($array);
 #### Получение статуса заказа (GetOrderStatus)
 Вызов:
 ```php
-$result = $exec->exec_CreateOrder_GetOrderStatus($array);
+$result = $exec->exec_GetOrderStatus($array);
 ```
 |переменная|значение|пример|
 | --- | ----- | ----- |
