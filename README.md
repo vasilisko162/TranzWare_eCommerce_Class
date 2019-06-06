@@ -4,8 +4,8 @@
 Compassplus: TranzWare eCommerce
 
 ## Информация
-* version: 0.0.5
-* date: 25.04.2019
+* version: 0.0.6
+* date: 06.06.2019
 
 ### Подключение
 

@@ -27,8 +27,10 @@ if ($_POST['action']) {
       $temp['log'] = 'no info about action';
       $result = json_encode($temp, TRUE);
   }
+} else {
+  $temp['status'] = 'error';
+  $temp['log'] = 'no info about action';
+  $result = json_encode($temp, TRUE);
 }
-
 echo $result;
-
 ?>

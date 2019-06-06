@@ -199,12 +199,12 @@ class testPage {
 
       if ($_POST || $_FILES) {
         $config = array();
-        include $_SERVER['DOCUMENT_ROOT'] . $configFile;
+        include $fileName;
         $eCommerceConfig = $config;
         $html[] = $this->updateOption($eCommerceConfig);
       }
 
-      include $_SERVER['DOCUMENT_ROOT'] . $configFile;
+      include $fileName;
       $eCommerceConfig = $config;
 
       $html[] = '<form method="post" id="Option" class="form-ecom" enctype="multipart/form-data"><ul>';
@@ -275,15 +275,19 @@ class testPage {
     }
 
     if (isset($_FILES)) {
-      if ($this->uploadFile($eCommerceConfig, $_FILES['fileCertUpload'], 'fileCert')) {
-        $html[] = 'Сертификат загружен<br>';
-      } else {
-        $html[] = 'Сертификат не загружен<br>';
+      if ($_FILES['fileCertUpload']['name']) {
+        if ($this->uploadFile($eCommerceConfig, $_FILES['fileCertUpload'], 'fileCert')) {
+          $html[] = 'Сертификат загружен<br>';
+        } else {
+          $html[] = 'Сертификат не загружен<br>';
+        }
       }
-      if ($this->uploadFile($eCommerceConfig, $_FILES['fileCertKeyUpload'], 'fileCertKey')) {
-        $html[] = 'Ключ загружен<br>';
-      } else {
-        $html[] = 'Ключ не загружен<br>';
+      if ($_FILES['fileCertKeyUpload']['name']) {
+        if ($this->uploadFile($eCommerceConfig, $_FILES['fileCertKeyUpload'], 'fileCertKey')) {
+          $html[] = 'Ключ загружен<br>';
+        } else {
+          $html[] = 'Ключ не загружен<br>';
+        }
       }
     }
 
