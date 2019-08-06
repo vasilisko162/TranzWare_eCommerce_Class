@@ -19,6 +19,7 @@ $config = array(
   'formCancelurl'  => 'http://bank-ecom?status=Cancel',
   'formDeclineurl' => 'http://bank-ecom?status=Decline',
   'formAmount'     => '',
+  'formAmount100'  => TRUE,
   'formCurrency'   => '',
   'formLanguage'   => 'RU' // RU / EN
 );

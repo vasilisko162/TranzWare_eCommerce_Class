@@ -18,6 +18,7 @@ class testPage {
       'formCancelurl'   => '',
       'formDeclineurl'  => '',
       'formAmount'      => rand(10, 99) . '0.' . (($a= rand(0,99)) < 10 ? '0' . $a : $a) ,
+      'formAmount100'   => FALSE,
       'formCurrency'    => '810', // 810 / 643 / 840 / 978
       'formDescription' => 'Описание товара - ' . date('ymd_His'),
       'formLanguage'    => 'RU',
@@ -32,6 +33,10 @@ class testPage {
         if ($value) {
           $this->config[$key] = $value;
         }
+      }
+
+      if ($this->config['formAmount100']) {
+        $this->config['formAmount'] *= 100;
       }
     }
 
