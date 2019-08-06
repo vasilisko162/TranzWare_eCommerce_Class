@@ -1,6 +1,6 @@
 <?php
 $config = array(
-  'configFile'     => 'config/config.php',
+  'configFile'     => '/test/config/config.php',
   'configArray'    => array(
     'url',
     'merchantid',

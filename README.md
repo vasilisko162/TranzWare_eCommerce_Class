@@ -1,11 +1,9 @@
-
-
 # TranzWare eCommerce Class
 Compassplus: TranzWare eCommerce
 
 ## Информация
-* version: 0.0.6
-* date: 06.06.2019
+* version: 0.0.7
+* date: 06.08.2019
 
 ### Подключение
 
@@ -33,9 +31,11 @@ $exec = new eCommerce($config);
 |logShow| Показывать логи. TRUE / FALSE ,|
 |logCurl| Как показывать логи Curl. standart / full. По умолчанию: standart|
 |data| Формат возврата данных. json / text. По умолчанию: json|
+|amountChange| Умножать цену на 100:  547.21 руб => 54721. По умолчанию: false|
 |curl_referer| Страница, откуда идет запрос|
 |curl_Ssl| Использовать сертификат при отправке запроса. TRUE / FALSE |
-|dirCert| Ссылка до сертификата|
+|fileCert| Ссылка на сертификат|
+|fileCertKey| Ссылка на ключ для сертификата|
 
 
 ### Операции

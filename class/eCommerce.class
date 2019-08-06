@@ -2,8 +2,8 @@
 /**
  * Created by Vasiliy Ivanov
  * client: Bank SIAB
- * version: 0.0.6
- * date: 06.06.2019
+ * version: 0.0.7
+ * date: 06.08.2019
  * email: vasilisko@gmail.com
  */
 
@@ -29,6 +29,7 @@ class eCommerce {
       'fileCert'               => '',             // Ссылка на сертификат
       'fileCertKey'            => '',             // Ссылка на ключ для сертификата
       'data'                   => 'json',         // json / text формат возврата данных
+      'amountChange'           => FALSE,          // Умножать цену на 100:  547.21 руб => 54721
       'curl_referer'           => '',             // Страница, откуда идет запрос
       'curl_Ssl'               => FALSE,          // отправка сертификата
       'curl_sslVerifypeer'     => FALSE,
@@ -97,6 +98,10 @@ class eCommerce {
       'declineurl'
     ));
 
+    if ($this->config['amountChange']) {
+      $array['amount'] *= 100;
+    }
+
     $xml = array();
     $xml[] = '<TKKPG>';
       $xml[] = '<Request>';
@@ -105,7 +110,7 @@ class eCommerce {
         $xml[] = '<Order>';
           $xml[] = '<OrderType>QuasiCash</OrderType>';
           $xml[] = '<Merchant>' . $this->config['merchantid'] . '</Merchant>';
-          $xml[] = '<Amount>' . ($array['amount'] * 100) . '</Amount>';
+          $xml[] = '<Amount>' . $array['amount'] . '</Amount>';
           $xml[] = '<Currency>' . $array['currency'] . '</Currency>';
           $xml[] = '<Description>' . $array['description'] . '</Description>';
           $xml[] = '<ApproveURL>' . $array['approveurl'] . '</ApproveURL>';
@@ -155,6 +160,10 @@ class eCommerce {
       $language = $array['language'];
     }
 
+    if ($this->config['amountChange']) {
+      $array['amount'] *= 100;
+    }
+
     $xml = array();
     $xml[] = '<TKKPG>';
       $xml[] = '<Request>';
@@ -163,7 +172,7 @@ class eCommerce {
         $xml[] = '<Order>';
           $xml[] = '<Merchant>' . $this->config['merchantid'] . '</Merchant>';
           $xml[] = '<OrderType>Purchase</OrderType>';
-          $xml[] = '<Amount>' . ($array['amount'] * 100) . '</Amount>';
+          $xml[] = '<Amount>' . $array['amount'] . '</Amount>';
           $xml[] = '<Currency>' . $array['currency'] . '</Currency>';
           $xml[] = '<Description>' . $array['description'] . '</Description>';
           $xml[] = '<ApproveURL>' . $array['approveurl'] . '</ApproveURL>';
@@ -208,6 +217,10 @@ class eCommerce {
       'declineurl'
     ));
 
+    if ($this->config['amountChange']) {
+      $array['amount'] *= 100;
+    }
+
     $xml = array();
     $xml[] = '<TKKPG>';
       $xml[] = '<Request>';
@@ -216,7 +229,7 @@ class eCommerce {
         $xml[] = '<Order>';
           $xml[] = '<OrderType>Payment</OrderType>';
           $xml[] = '<Merchant>' . $this->config['merchantid'] . '</Merchant>';
-          $xml[] = '<Amount>' . ($array['amount'] * 100) . '</Amount>';
+          $xml[] = '<Amount>' . $array['amount'] . '</Amount>';
           $xml[] = '<Currency>' . $array['currency'] . '</Currency>';
           $xml[] = '<Description>' . $array['description'] . '</Description>';
           $xml[] = '<ApproveURL>' . $array['approveurl'] . '</ApproveURL>';
