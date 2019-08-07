@@ -1,4 +1,5 @@
 <?php
+$finishPageUrl = 'http://bank-ecom/test/finish.php';
 $config = array(
   'configFile'     => '/test/config/config.php',
   'configArray'    => array(
@@ -15,11 +16,11 @@ $config = array(
     'language'
   ),
   'formReferer'    => 'http://bank-ecom',
-  'formApproveurl' => 'http://bank-ecom?status=Approve',
-  'formCancelurl'  => 'http://bank-ecom?status=Cancel',
-  'formDeclineurl' => 'http://bank-ecom?status=Decline',
+  'formApproveurl'  => $finishPageUrl . '?status=approve',
+  'formCancelurl'   => $finishPageUrl . '?status=cancel',
+  'formDeclineurl'  => $finishPageUrl . '?status=decline',
   'formAmount'     => '',
-  'formAmount100'  => TRUE,
+  'formAmount100'  => FALSE,
   'formCurrency'   => '',
   'formLanguage'   => 'RU' // RU / EN
 );

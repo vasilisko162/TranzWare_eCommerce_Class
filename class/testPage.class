@@ -100,8 +100,8 @@ class testPage {
       'form_003' => array(
         'action' => 'GetOrderStatus',
         'row'    => array(
-          'OrderID'   => '@encrypted@1@1DDC9A843D966657',
-          'SessionID' => '@encrypted@1@DF9B1AD02A1A81AAD9164EA4703A3087F6EBBAD71B617F301415B574C8B4F261794145531D13FE71',
+          'OrderID'   => '',
+          'SessionID' => '',
           'language'  => $this->config['formLanguage']
         )
       ),
@@ -134,16 +134,90 @@ class testPage {
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
       <meta http-equiv="Content-Language" content="ru">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <link type="text/css" rel="stylesheet" href="css/styles.css?v=' . filemtime('css/styles.css') . '">
+      <link type="text/css" rel="stylesheet" href="css/styles.css?v=' . md5(filemtime('css/styles.css')) . '">
       <script type="text/javascript" src="js/jquery.min.js"></script>
       <script type="text/javascript" src="js/jquery-ui.js"></script>
-      <script type="text/javascript" src="js/script.js?v=' . filemtime('js/script.js') . '"></script>
+      <script type="text/javascript" src="js/script.js?v=' . md5(filemtime('js/script.js')) . '"></script>
     </head>
     <body>
-    ' . $this->menu() . '
-    <h2>' . $this->menu[$_GET['page']] . '</h2>
-    <div class="form">' . $this->showContent() . '</div>
-    <div class="show_result"></div>
+      ' . $this->menu() . '
+      <h2>' . $this->menu[$_GET['page']] . '</h2>
+      <div class="form">' . $this->showContent() . '</div>
+      <div class="show_result"></div>
+    </body>
+    </html>';
+    return $contet;
+  }
+
+
+  function showFinishPage() {
+    $status = 'Неизвестно';
+    $orderInfo = array();
+    $orderInfoShow = array();
+
+    if ($_GET) {
+      switch ($_GET['status']) {
+        case 'approve':
+          $status = 'Платеж успешно проведен.';
+          break;
+        case 'cancel':
+          $status = 'Платеж был отменен клиентом.';
+          break;
+        case 'decline':
+          $status = 'Платеж не прошел.';
+          break;
+        default:
+          $status = 'Неизвестно';
+      }
+    }
+
+    if ($_POST['xmlmsg']) {
+      $xmlArray = json_decode(json_encode(new SimpleXMLElement($_POST['xmlmsg'])), TRUE);
+      $orderInfo = array(
+        'Тип операции' => $xmlArray['TransactionType'],
+        'Статус платежа' => $xmlArray['OrderStatusScr'] . ' (' . $xmlArray['OrderStatus'] . ')',
+        'Код ответа' => $xmlArray['ResponseCode'],
+        'Описание кода' => $xmlArray['ResponseDescription'],
+        'Order ID' => $xmlArray['OrderID'],
+        'Session ID' => $xmlArray['SessionID'],
+        'Merchant TranID' => $xmlArray['MerchantTranID'],
+        'Сумма платежа' => ($xmlArray['PurchaseAmount'] / 100),
+        'Валюта' => $xmlArray['CurrencyScr'] . ' (' . $xmlArray['Currency'] . ')',
+        'Описание товара' => $xmlArray['OrderDescription'],
+        'PAN карты' => $xmlArray['PAN'] . ' (' . $xmlArray['Brand'] . ')',
+        'Имя держателя карты' => $xmlArray['CardHolderName'],
+        'AcqFee' => $xmlArray['AcqFee'],
+        'ApprovalCode' => implode(', ', $xmlArray['ApprovalCode'])
+      );
+
+      $orderInfoShow[] = '<ul>';
+      foreach ($orderInfo as $key => $value) {
+        $orderInfoShow[] = '<li><b>'.$key.'</b>: '.$value.'</li>';
+      }
+      $orderInfoShow[] = '</ul>';
+    }
+
+    $contet = '<html>
+    <head>
+      <title>Test eCom - finish</title>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      <meta http-equiv="Content-Language" content="ru">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link type="text/css" rel="stylesheet" href="css/styles.css?v=' . md5(filemtime('css/styles.css')) . '">
+      <script type="text/javascript" src="js/jquery.min.js"></script>
+      <script type="text/javascript" src="js/jquery-ui.js"></script>
+      <script type="text/javascript" src="js/script.js?v=' . md5(filemtime('js/script.js')) . '"></script>
+    </head>
+      <body class="finish-page">
+      <h2>Финишная страница</h2>
+      <div class="show_result">
+      <div>Статус платежа: <b>' . $status . '</b></div><br/>
+      <div>Данные платежа:</div>
+        '.implode('',$orderInfoShow).'<br/>
+      <div>Дополнительная информация:</div><br/>
+        POST data: <textarea style="width: 100%; height: 150px">' . print_r($_POST, TRUE) . '</textarea><br><br>
+        GET data: <textarea style="width: 100%; height: 150px">' . print_r($_GET, TRUE) . '</textarea><br><br>
+      </div>
     </body>
     </html>';
     return $contet;
@@ -153,7 +227,7 @@ class testPage {
     if ($this->menu[$_GET['page']]) {
       if ($this->form[$_GET['page']]) {
         return $this->createForm($_GET['page']);
-      } else if($_GET['page'] == 'option') {
+      } else if ($_GET['page'] == 'option') {
         return $this->showOption();
       } else {
         return 'Выберите форму из меню';
@@ -177,7 +251,7 @@ class testPage {
         }
 
         if ($this->titleInfo[$key]) {
-          $title = ' title="'.$this->titleInfo[$key].'" style="cursor: help;"';
+          $title = ' title="' . $this->titleInfo[$key] . '" style="cursor: help;"';
         } else {
           $title = '';
         }
@@ -215,8 +289,8 @@ class testPage {
       $html[] = '<form method="post" id="Option" class="form-ecom" enctype="multipart/form-data"><ul>';
       foreach ($this->config['configArray'] as $item) {
         $html[] = '<li>
-          <div class="name">'.$item.'</div>
-          <div class="field"><input type="text" name="'.$item.'" value="'.$eCommerceConfig[$item].'"></div>
+          <div class="name">' . $item . '</div>
+          <div class="field"><input type="text" name="' . $item . '" value="' . $eCommerceConfig[$item] . '"></div>
         </li>';
       }
 
@@ -262,7 +336,7 @@ class testPage {
           } else {
             $z = ',';
           }
-          $text[] = '  \''.$key.'\' => \''.$value.'\'' . $z;
+          $text[] = '  \'' . $key . '\' => \'' . $value . '\'' . $z;
         }
       }
       $text[] = ');';
@@ -271,7 +345,7 @@ class testPage {
       $fileName = $_SERVER['DOCUMENT_ROOT'] . $this->config['configFile'];
 
       if (is_writable($fileName)) {
-        $content = implode("\n",$text);
+        $content = implode("\n", $text);
         if ($handle = fopen($fileName, 'w')) {
           fwrite($handle, $content);
           fclose($handle);
