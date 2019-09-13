@@ -1,0 +1,4 @@
+/.idea/
+/test/certs/test.*
+/test/config/config.php
+/test/config/config.testPage.php
